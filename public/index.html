@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder</title>
+    <link rel="stylesheet" href="lib/bootstrap.min.css">
+    <link href="lib/quill.snow.css" rel="stylesheet">
+    
+
+</head>
+<body class="bg-light">
+
+    <!-- MOST IF NOT ALL OF THE HTML WAS BUILT BY GEMINI AI. -->
+    <!-- I mostly just went down and noted all the relevant IDs for usage on app.js later. -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">AI Resume Builder</span>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- SETTINGS: id=strGeminiKey, id=btnSaveKey -->
+        <section class="card shadow-sm mb-4" aria-labelledby="settings-heading">
+            <div class="card-body">
+                <h2 id="settings-heading" class="h5">Settings</h2>
+
+                <div class="input-group">
+                    <input type="password" id="strGeminiKey" class="form-control" placeholder="Enter Gemini API Key" aria-label="Gemini API Key">
+                    <button class="btn btn-outline-secondary" type="button" id="btnSaveKey">Save Key</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TARGET JOB DETAILS: id=txtTargetJob, id=btnSaveTarget-->
+        <section class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5">Target Job Description</h2>
+                <textarea id="txtTargetJob" class="form-control" rows="4" 
+                        placeholder="Paste the job description you are targeting here..."></textarea>
+                <button id="btnSaveTarget" class="btn btn-secondary mt-2">Save Target Context</button>
+            </div>
+        </section>
+
+        <!-- ADD JOB: id=strCompany, id=strTitle, id=strStartDate, id=strEndDate, id=btnSaveJob -->
+        <section class="card shadow-sm mb-4" aria-labelledby="job-heading">
+            <div class="card-body">
+                <h2 id="job-heading" class="h5">Add Job</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" id="strCompany" class="form-control" placeholder="Company" aria-label="Company Name">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="strTitle" class="form-control" placeholder="Job Title" aria-label="Job Title">
+                    </div>
+                <div class="col-md-6">
+                    <label for="strStartDate" class="form-label small text-muted">Start Date</label>
+                    <input type="month" id="strStartDate" class="form-control" aria-label="Employment Start Date">
+                </div>
+                <div class="col-md-6">
+                    <label for="strEndDate" class="form-label small text-muted">End Date (Leave blank if current)</label>
+                    <input type="month" id="strEndDate" class="form-control" aria-label="Employment End Date">
+                </div>
+                    <div class="col-12">
+                        <button id="btnSaveJob" class="btn btn-primary w-100 mt-3">Add Job</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- JOB DETAILS - INITIALLY HIDDEN: id=selJob, //id=strRawDetail -> quill, id=btnGetAI, id=btnSaveDetail, id=btnUseAI -->
+        <section id="sectionDetails" class="card shadow-sm mb-4 d-none" aria-labelledby="detail-heading">
+            <div class="card-body">
+                <h2 id="detail-heading" class="h5">Job Responsibilities</h2>
+                <select id="selJob" class="form-select mb-3" aria-label="Select Job for detail"></select>
+                
+                <div id="divQuillContainer" class="mb-2" style="height: 200px" aria-label="Quill Text Editor for Job Details">
+
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button id="btnGetAI" class="btn btn-info text-white">Get AI Suggestion</button>
+                    <button id="btnSaveDetail" class="btn btn-success">Save Detail</button>
+                </div>
+
+                <div id="divAISuggestion" class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning rounded d-none">
+                    <strong>AI Suggestion:</strong>
+                    <p id="txtAISuggestion" class="mb-0 italic"></p>
+                    <button class="btn btn-sm btn-link p-0" id="btnUseAI">Use this suggestion</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- EDUCATION: id=strDegree, id=strUniversity, id=strEdState, id=strEdStart, id=strEdEnd, id=btnSaveEd -->
+        <section class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5">Add Education</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" id="strDegree" class="form-control" placeholder="Degree (e.g. BS in Computer Science)">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="strUniversity" class="form-control" placeholder="University">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="strEdState" class="form-label small text-muted">State</label>
+                        <input type="text" id="strEdState" class="form-control" placeholder="State">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="strEdStart" class="form-label small text-muted">Start Date</label>
+                        <input type="month" id="strEdStart" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="strEdEnd" class="form-label small text-muted">End Date</label>
+                        <input type="month" id="strEdEnd" class="form-control">
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <button id="btnSaveEd" class="btn btn-primary w-100">Add Education</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS: id=strSkillName, id=strCategory, id=btnSaveSkill -->
+        <section class="card shadow-sm mb-4" aria-labelledby="skill-heading">
+            <div class="card-body">
+                <h2 id="skill-heading" class="h5">Add Skills</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" id="strSkillName" class="form-control" placeholder="Skill (e.g. JavaScript)" aria-label="Skill Name">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="strCategory" class="form-control" placeholder="Category (e.g. Languages)" aria-label="Skill Category">
+                    </div>
+                    <div class="col-12">
+                        <button id="btnSaveSkill" class="btn btn-primary w-100 mt-3">Add Skill</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AWARDS: id=strCertName, id=btnSaveCert-->
+        <section class="card shadow-sm mb-4" aria-labelledby="cert-heading">
+            <div class="card-body">
+                <h2 id="cert-heading" class="h5">Add Certifications & Awards</h2>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <input type="text" id="strCertName" class="form-control" placeholder="Certification or Award Title" aria-label="Certification Title">
+                    </div>
+                    <div class="col-12">
+                        <button id="btnSaveCert" class="btn btn-primary w-100 mt-3">Add Certification</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINAL RESUME GENERATION: id=btnGenerateResume -->
+        <section class="mb-5">
+            <button id="btnGenerateResume" class="btn btn-dark btn-lg w-100" aria-label="Generate and view final resume">Generate Final Resume</button>
+        </section>
+
+        <!-- DISPLAY AREA FOR FINAL TAILORED RESUME: id=divDisplayArea -->
+        <section id="sectionPreview" class="mt-5">
+            <h3>Your Resume Content</h3>
+            <div id="divDisplayArea" class="list-group">
+                </div>
+        </section>
+
+    </main>
+
+    <footer class="container text-center mt-5 pb-5 text-muted">
+        <p>Built with <a href="https://getbootstrap.com/">Bootstrap</a>, 
+        <a href="https://quilljs.com/">QuillJS</a>,  
+        <a href="https://www.sqlite.org/">SQLite</a>, and
+        <a href="https://ai.google.dev/">Google Gemini API</a>.</p>
+    </footer>
+
+    
+    <script src="lib/quill.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
