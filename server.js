@@ -280,11 +280,10 @@ app.post('/api/ai/suggest', async (req, res) => {
 
 // POST: AI TAILOR FINAL 
 app.post('/api/ai/tailor-final', async (req, res) => {
-    const { userName, userPhone, userEmail, userLoc, userLinks } = req.body
-    const strUserName = req.body.userName.trim()
-    const strUsrPhone = req.body.userPhone.trim()
-    const strUserLoc = req.body.userLoc.trim()
-    const strUserLinks = req.body.userLinks.trim()
+    dbResume.get("SELECT * FROM tblPersonalInfo LIMIT 1", async (err, userInfo) => {
+            if (err || !userInfo) {
+                return res.status(400).json({ strError: "Personal information not found in database. Please save it first!" })
+            }
 
     const strTargetJob = req.body.targetJob.trim()
     const arrDetails = req.body.details //this is an array, no trimming arrays
@@ -314,11 +313,11 @@ app.post('/api/ai/tailor-final', async (req, res) => {
                         DO NOT lie. You cannot lie. It is imperative that you do not lie.
 
                         USER DATA:
-                        Name: ${userName}
-                        Phone: ${userPhone}
-                        Email: ${userEmail}
-                        Location: ${userLoc}
-                        Links: ${userLinks}
+                        Name: ${userInfo.FullName}
+                        Phone: ${userInfo.Phone}
+                        Email: ${userInfo.Email}
+                        Location: ${userInfo.Location}
+                        Links: ${userInfo.Links}
                         Target Job: ${strTargetJob}
                         Selected Jobs: ${arrJobs.join(', ')}
                         Selected Experience: ${arrDetails.join(' | ')}
@@ -337,7 +336,13 @@ app.post('/api/ai/tailor-final', async (req, res) => {
                         6. Make sure to include the start and end dates for every 'Selected Jobs' and 'Selected Education'. 
                         7.) Return the raw HTML for the interior of a resume card only.
                         8.) Place the resume in a white card of its own, make it look like A4 paper.
-
+                        9.) You MUST include these specific H3 headers with a <hr> (horizontal rule) under each: 
+                            - Summary
+                            - Experience
+                            - Skills
+                            - Awards & Certifications
+                            - Education
+                        
             `
             }) //once again, I am using gemini AI to spawn in a valid prompt because my prompt resulted in a sketchy response that just lied about everything in the resume preview. 
 
@@ -347,6 +352,7 @@ app.post('/api/ai/tailor-final', async (req, res) => {
             res.status(500).json({ strError: "AI Service Failed: " + error.message }) 
         }
     })
+})
 })
 /*
 
