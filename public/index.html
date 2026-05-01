@@ -3,8 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- mobile app configs -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+    <meta name="apple-mobile-web-app-capable" content="yes"> 
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"> 
+
+    <!-- favicon configs -->
+    <!-- https://stackoverflow.com/questions/18301745/how-to-set-up-a-favicon -->
+    <link rel="apple-touch-icon" type="image/png" href="images/appiconResume.png" alt="blue weather app icon">
+    <link rel="icon" type="image/png" href="images/appiconResume.png" alt="blue weather app icon">
+
+    <!-- meta description as suggested by google lighthouse -->
+    <meta name="description" 
+          content="Resume builder that utilizes Google's Gemini AI api to suggest or create a resume
+                   from user-submitted information, including analysis on targeted job description, previous jobs,
+                   job details/responsibilities, education, skills, and awards & certificates.">
     <title>Resume Builder</title>
-    <link rel="stylesheet" href="lib/bootstrap.min.css">
+
+    <!-- trying to get print to work -->
+    <link href="print.css" rel="stylesheet" media="print">
+
+    <!-- relevant libraries used -->
+    <link href="lib/bootstrap.min.css" rel="stylesheet" >
     <link href="lib/quill.snow.css" rel="stylesheet">
     
 
@@ -38,8 +59,35 @@
             <div class="card-body">
                 <h2 class="h5">Target Job Description</h2>
                 <textarea id="txtTargetJob" class="form-control" rows="4" 
-                        placeholder="Paste the job description you are targeting here..."></textarea>
+                        placeholder="Paste the job description you are targeting here..." aria-label="Target Job Description"></textarea>
                 <button id="btnSaveTarget" class="btn btn-secondary mt-2">Save Target Context</button>
+            </div>
+        </section>
+
+        <!-- LAST MINUTE USER INFO: id=strUserName, id=UserPhone, id=strUserEmail, id=strUserLoc, id=strUserLinks, id=btnSaveInfo -->
+        <section class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5">Personal Information</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" id="strUserName" class="form-control" placeholder="Full Name" aria-label="Full Name">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="strUserPhone" class="form-control" placeholder="Phone Number" aria-label="Phone Number">
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <input type="email" id="strUserEmail" class="form-control" placeholder="Email Address" aria-label="Email Address">
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <input type="text" id="strUserLoc" class="form-control" placeholder="City, State (e.g. Cookeville, TN)" aria-label="Location">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <input type="text" id="strUserLinks" class="form-control" placeholder="LinkedIn, GitHub, or Portfolio URL" aria-label="Professional Links">
+                    </div>
+                    <div class="col-12">
+                        <button id="btnSaveInfo" class="btn btn-primary w-100 mt-2">Save Personal Info</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -75,7 +123,8 @@
                 <h2 id="detail-heading" class="h5">Job Responsibilities</h2>
                 <select id="selJob" class="form-select mb-3" aria-label="Select Job for detail"></select>
                 
-                <div id="divQuillContainer" class="mb-2" style="height: 200px" aria-label="Quill Text Editor for Job Details">
+                <label for="divQuillContainer" class="form-label d-none">Job Responsibilities Editor</label>
+                <div id="divQuillContainer" class="mb-2" style="height: 200px">
 
                 </div>
                 
@@ -98,9 +147,11 @@
                 <h2 class="h5">Add Education</h2>
                 <div class="row g-3">
                     <div class="col-md-6">
+                        <label for="strDegree" class="form-label small text-muted">Degree</label>
                         <input type="text" id="strDegree" class="form-control" placeholder="Degree (e.g. BS in Computer Science)">
                     </div>
                     <div class="col-md-6">
+                        <label for="strUniversity" class="form-label small text-muted">University</label>
                         <input type="text" id="strUniversity" class="form-control" placeholder="University">
                     </div>
 
@@ -163,14 +214,21 @@
         </section>
 
         <!-- DISPLAY AREA FOR FINAL TAILORED RESUME: id=divDisplayArea -->
-        <section id="sectionPreview" class="mt-5">
-            <h3>Your Resume Content</h3>
-            <div id="divDisplayArea" class="list-group">
-                </div>
-        </section>
+        <div id="print-section">
+            <section id="sectionPreview" class="mt-5">
+                <h3>Your Resume Content</h3>
+                <div id="divDisplayArea" class="list-group"></div>
+            </section>
+        </div>
+
+        <div class="container text-center mt-5 pb-5 text-muted">
+            <h4>Please press CTRL + P to print the generated resume.</h4>
+        </div>
+
 
     </main>
 
+    <!-- Footer for mentioning used libraries -->
     <footer class="container text-center mt-5 pb-5 text-muted">
         <p>Built with <a href="https://getbootstrap.com/">Bootstrap</a>, 
         <a href="https://quilljs.com/">QuillJS</a>,  
@@ -178,8 +236,8 @@
         <a href="https://ai.google.dev/">Google Gemini API</a>.</p>
     </footer>
 
-    
-    <script src="lib/quill.min.js"></script>
-    <script src="app.js"></script>
+    <!-- deferred as per suggested by google lighthouse :(-->
+    <script src="lib/quill.min.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>

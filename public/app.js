@@ -146,7 +146,29 @@ document.querySelector('#btnSaveEd').addEventListener('click', async()=>{
     if (objRes.ok) {
         refreshUI()
     }
+})
 
+document.querySelector('#btnSaveInfo').addEventListener('click', async () => {
+    const strName = document.querySelector('#strUserName').value.trim()
+    const strPhone = document.querySelector('#strUserPhone').value.trim()
+    const strEmail = document.querySelector('#strUserEmail').value.trim()
+    const strLoc = document.querySelector('#strUserLoc').value.trim()
+    const strLinks = document.querySelector('#strUserLinks').value.trim()
+
+    if (!strName || !strEmail) {
+        alert("Name and Email are required!")
+        return
+    }
+
+    const objRes = await fetch('/api/personal-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({name: strName, phone: strPhone, email: strEmail, location: strLoc, links: strLinks })
+    })
+
+    if (objRes.ok) {
+        alert("Personal information saved successfully!")
+    }
 })
 /*
 
@@ -155,7 +177,7 @@ document.querySelector('#btnSaveEd').addEventListener('click', async()=>{
 */
 //btnGetAI
 document.querySelector('#btnGetAI').addEventListener('click', async()=>{
-    let strInput = objQuillEditor.getText().trim()
+    let strInput = objQuillEditor.getText().trim() //grab the plain text from the quill editor and store into strInput
 
     if (!strInput)
     {
@@ -209,6 +231,13 @@ document.querySelector('#btnGenerateResume').addEventListener('click', async()=>
         which is incompatible with the .map() function. From what I can tell, Array.from then turns the NodeList into a valid array before
         mapping. 
     */
+
+    const strName = document.querySelector('#strUserName').value.trim()
+    const strPhone = document.querySelector('#strUserPhone').value.trim()
+    const strEmail = document.querySelector('#strUserEmail').value.trim()
+    const strLoc = document.querySelector('#strUserLoc').value.trim()
+    const strLinks = document.querySelector('#strUserLinks').value.trim()
+        
     const arrSelectedJobs = Array.from(document.querySelectorAll('.chk-resume-job:checked')).map(el =>{
         const jobID = el.value // The checkbox value is the JID
         const jobObj = arrJobs.find(j => j.JID == jobID) // Find the job in our global array
@@ -226,6 +255,11 @@ document.querySelector('#btnGenerateResume').addEventListener('click', async()=>
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+            userName: strName,
+            userPhone: strPhone,
+            userEmail: strEmail,
+            userLoc: strLoc,
+            userLinks: strLinks,
             targetJob: strTarget,
             details: arrSelectedDetails,
             skills: arrSelectedSkills,
@@ -239,8 +273,8 @@ document.querySelector('#btnGenerateResume').addEventListener('click', async()=>
         if (objRes.ok) {
             let suggestHtml = objData.strSuggestion //html format grabs the stuff suggested by ai
 
-            resPreview.innerHTML = suggestHtml //html is displayed on preview
-            resPreview.scrollIntoView({ behavior: 'smooth' }) 
+            resPreview.innerHTML = suggestHtml //html is displayed on preview, replaces the spinner
+            resPreview.scrollIntoView({ behavior: 'smooth' }) //auto scrolls down to the preview
         } else {
             resPreview.innerHTML = `<p>Error: ${objData.strError}</p>`
         }
@@ -350,11 +384,24 @@ async function refreshUI() {
     AI-created function that was created at the same time as refreshUI(). This one specifically targets 
     slotting in details into their respective jobs. 
 
+    UPDATE: Added a check so that if a detail is selected, then ilts corresponding job is automatically selected.
+
 */
 async function fetchAndRenderDetails(JID) {
     const objRes = await fetch(`/api/details?jid=${JID}`)
     const arrDetails = await objRes.json()
     const elDetailContainer = document.getElementById(`detailsFor${JID}`)
+
+    elDetailContainer.querySelectorAll('.chk-resume-detail').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                const elJobCheckbox = document.getElementById(`job${JID}`)
+                if (elJobCheckbox) {
+                    elJobCheckbox.checked = true
+                }
+            }
+        })
+    })
 
     arrDetails.forEach(objDetail => {
         elDetailContainer.innerHTML += `
@@ -364,6 +411,7 @@ async function fetchAndRenderDetails(JID) {
             </div>
         `
     })
+    
 }
 
 /*

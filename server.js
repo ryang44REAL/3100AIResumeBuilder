@@ -3,7 +3,7 @@ import sqlite3 from 'sqlite3'
 import { GoogleGenAI } from "@google/genai"
 
 //node --env-file=.env server.js for .env to be recognized 
-const PORT = process.env.PORT //which should be 3000 from .env
+const PORT = 3000 //which should be 3000 from .env -> process.env.PORT
 
 //http://localhost:3000
 
@@ -69,6 +69,14 @@ function initializeDatabase() {
         dbResume.run(`CREATE TABLE IF NOT EXISTS tblTarget (
             TID INTEGER PRIMARY KEY AUTOINCREMENT,
             TargetDetails TEXT
+        )`)
+        dbResume.run(`CREATE TABLE IF NOT EXISTS tblPersonalInfo (
+            PID INTEGER PRIMARY KEY AUTOINCREMENT,
+            FullName TEXT,
+            Phone TEXT,
+            Email TEXT,
+            Location TEXT,
+            Links TEXT
         )`)
     })
 }
@@ -213,6 +221,27 @@ app.post('/api/education', (req,res)=>{
     }) 
 })
 
+// POST: Add new Users
+app.post('/api/personal-info', (req, res) => {
+    let strName = req.body.name.trim()
+    let strPhone = req.body.phone.trim()
+    let strEmail = req.body.email.trim()
+    let strLocation = req.body.location.trim()
+    let strLinks = req.body.links.trim()
+
+    // Clear old entry so there is only ever one personal profile
+    dbResume.run("DELETE FROM tblPersonalInfo", [], () => { 
+        dbResume.run(`INSERT INTO tblPersonalInfo (FullName, Phone, Email, Location, Links) 
+                     VALUES (?, ?, ?, ?, ?)`, [strName, strPhone, strEmail, strLocation, strLinks], (err) => {
+            if (err){
+                return res.status(500).json({ message: err.message })
+            } 
+
+            res.status(200).json({ message: "Success" })
+        })
+    })
+})
+
 // POST: AI API Suggestion **BUILT WITH AI INSTRUCTION, SEE DETAILS BELOW:
 /*
     Gemini AI was used here from everything below let strPrompt. I specifically had no clue how to approach the
@@ -251,6 +280,12 @@ app.post('/api/ai/suggest', async (req, res) => {
 
 // POST: AI TAILOR FINAL 
 app.post('/api/ai/tailor-final', async (req, res) => {
+    const { userName, userPhone, userEmail, userLoc, userLinks } = req.body
+    const strUserName = req.body.userName.trim()
+    const strUsrPhone = req.body.userPhone.trim()
+    const strUserLoc = req.body.userLoc.trim()
+    const strUserLinks = req.body.userLinks.trim()
+
     const strTargetJob = req.body.targetJob.trim()
     const arrDetails = req.body.details //this is an array, no trimming arrays
     const arrSkills = req.body.skills //this is also an array
@@ -279,6 +314,11 @@ app.post('/api/ai/tailor-final', async (req, res) => {
                         DO NOT lie. You cannot lie. It is imperative that you do not lie.
 
                         USER DATA:
+                        Name: ${userName}
+                        Phone: ${userPhone}
+                        Email: ${userEmail}
+                        Location: ${userLoc}
+                        Links: ${userLinks}
                         Target Job: ${strTargetJob}
                         Selected Jobs: ${arrJobs.join(', ')}
                         Selected Experience: ${arrDetails.join(' | ')}
@@ -293,9 +333,10 @@ app.post('/api/ai/tailor-final', async (req, res) => {
                         4. Provide a brief resume summary at the top of the resume preview.
                            Keep this to 3-4 sentences. Tailor this summary specifically to the targetted job
                            by highlighting how the selected user data applies to that targetted job. 
-                        5. When listing out skills, list them with bullet points.
-                        6. At the very top of the resume, you may use placeholders (liked Jane Doe or John Doe) for name, phone number, email, etc. 
-                        7. Make sure to include the start and end dates for every 'Selected Jobs' and 'Selected Education'. 
+                        5. When listing out 'Selected Skills', 'Selected Awards/Certs', and 'Selected Experience, list them with bullet points.
+                        6. Make sure to include the start and end dates for every 'Selected Jobs' and 'Selected Education'. 
+                        7.) Return the raw HTML for the interior of a resume card only.
+                        8.) Place the resume in a white card of its own, make it look like A4 paper.
 
             `
             }) //once again, I am using gemini AI to spawn in a valid prompt because my prompt resulted in a sketchy response that just lied about everything in the resume preview. 
